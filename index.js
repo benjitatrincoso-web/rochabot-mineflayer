@@ -5,7 +5,7 @@ const express = require('express');
 // =====================
 // Configuración del bot
 // =====================
-const BOT_USERNAME = process.env.BOT_USERNAME || 'rochabot'; // nombre del bot
+const BOT_USERNAME = process.env.BOT_USERNAME || 'rochabot';
 const SERVER_HOST = process.env.SERVER_HOST || 'rochachipamepija.aternos.me';
 const SERVER_PORT = parseInt(process.env.SERVER_PORT) || 15153;
 const MC_VERSION = process.env.MC_VERSION || '1.21.10';
@@ -26,6 +26,18 @@ function createBot() {
     console.log(`Bot conectado al servidor ${SERVER_HOST}:${SERVER_PORT}`);
   });
 
+  bot.on('spawn', () => {
+    console.log('Bot listo, iniciando movimiento anti-AFK');
+
+    // Movimiento anti-AFK
+    bot.setControlState('forward', true); // camina hacia adelante
+
+    setInterval(() => {
+      bot.setControlState('jump', true); // salta cada 10s
+      setTimeout(() => bot.setControlState('jump', false), 500);
+    }, 10000);
+  });
+
   bot.on('end', () => {
     console.log(`Bot desconectado. Reintentando en ${RECONNECT_DELAY / 1000}s...`);
     setTimeout(createBot, RECONNECT_DELAY);
@@ -34,16 +46,6 @@ function createBot() {
   bot.on('error', (err) => {
     console.log('Error del bot:', err);
   });
-
-  // =====================
-  // Movimiento anti-AFK
-  // =====================
-  bot.setControlState('forward', true); // camina siempre hacia adelante
-
-  setInterval(() => {
-    bot.setControlState('jump', true); // salta cada tanto
-    setTimeout(() => bot.setControlState('jump', false), 500);
-  }, 10000); // cada 10 segundos
 
   return bot;
 }
